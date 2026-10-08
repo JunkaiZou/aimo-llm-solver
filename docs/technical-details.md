@@ -34,23 +34,18 @@ conversation = {
 
 ### 工具执行流程
 
-```
-用户问题输入
-    ↓
-LLM 生成响应（可能包含工具调用）
-    ↓
-Harmony 解析器识别 <|action_start|>... <|action_end|>
-    ↓
-提取工具类型（如 "jupyter_python"）和代码
-    ↓
-发送代码到对应 Jupyter kernel
-    ↓
-kernel 执行并返回 stdout/stderr
-    ↓
-将结果包装为 tool_message 回填给 LLM
-    ↓
-LLM 继续推理或输出最终答案
-```
+工具调用的处理遵循以下步骤：
+
+1. **用户问题输入** — 接收题目文本
+2. **LLM 生成响应** — 调用 vLLM 生成推理文本（可能包含工具调用）
+3. **Harmony 解析** — 识别特殊标记 `<|action_start|>` 和 `<|action_end|>`
+4. **提取工具信息** — 解析工具类型（如 `jupyter_python`）和代码内容
+5. **发送到 Kernel** — 将代码发送到分配的 Jupyter kernel 执行
+6. **执行和收集结果** — Kernel 执行代码并返回 stdout/stderr
+7. **结果回填** — 将执行结果打包为 `tool_message` 格式
+8. **继续推理** — LLM 根据工具结果继续推理或输出最终答案
+
+该过程可在单条推理链中循环多次（LLM 需要多次工具调用时）。
 
 ### 持久 Jupyter 核心池的实现
 
